@@ -1,8 +1,8 @@
-Origin: 2xBypass
-Label: 2x
+Origin: 2xBypass Repo
+Label: 2xBypass
 Suite: stable
 Version: 1.0
-Codename: ios
+Codename: 2x
 Architectures: iphoneos-arm64
 Components: main
 Description: Developed by 2x
