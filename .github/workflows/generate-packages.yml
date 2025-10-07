@@ -13,24 +13,37 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install dpkg-dev
         run: |
-          sudo apt-get update
+          sudo apt-get update -y
           sudo apt-get install -y dpkg-dev
+
+      - name: Verify .deb files
+        run: |
+          echo "📦 Listando arquivos em debs/"
+          ls -lh debs || echo "⚠️ Pasta debs não encontrada"
+          if [ ! -f debs/*.deb ]; then
+            echo "❌ Nenhum arquivo .deb encontrado em /debs/"
+            exit 1
+          fi
 
       - name: Generate Packages
         run: |
           cd debs
+          echo "🧩 Gerando Packages e Packages.gz..."
           dpkg-scanpackages . /dev/null > Packages
           gzip -k -f Packages
+          echo "✅ Packages gerado com sucesso!"
+          ls -lh
 
       - name: Commit generated files
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          echo "📝 Commitando arquivos..."
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add debs/Packages debs/Packages.gz || true
-          git commit -m "Update Packages" || echo "No changes to commit"
+          git commit -m "Update APT repository index" || echo "Nenhuma mudança para commit"
           git push
