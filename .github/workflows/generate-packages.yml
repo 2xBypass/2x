@@ -1,0 +1,32 @@
+name: Generate APT Packages
+
+on:
+  push:
+    paths:
+      - 'debs/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Install dpkg-dev
+        run: sudo apt-get update && sudo apt-get install -y dpkg-dev
+
+      - name: Generate Packages
+        run: |
+          mkdir -p debs
+          dpkg-scanpackages ./debs /dev/null > Packages || true
+          gzip -c Packages > Packages.gz || true
+
+      - name: Commit generated files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Packages Packages.gz || true
+          git commit -m "chore: update Packages" || echo "no changes to commit"
+          git push
